@@ -16,31 +16,6 @@ import os
 import urllib.request
 import gdown  
 
-def load_model():
-    global model
-    model_path = 'model2.pth'
-    
-    try:
-        if not os.path.exists(model_path):
-            print("🔻 Model not found. Downloading from Google Drive...")
-            url = 'https://drive.google.com/uc?id=1hR0NRdhtdzewxEt3hjnpo2D65hOmzvdu'
-            gdown.download(url, model_path, quiet=False)
-            print("✅ model2.pth downloaded successfully.")
-
-        print(f"📁 Loading model from: {os.path.abspath(model_path)}")
-
-        model = DenseNetModel(num_classes=10)
-        checkpoint = torch.load(model_path, map_location=device)
-        model.load_state_dict(checkpoint)
-        model.to(device)
-        model.eval()
-        print("✅ Model loaded successfully!")
-        return True
-
-    except Exception as e:
-        print(f"❌ Error loading model: {str(e)}")
-        return False
-
 
 app = flask.Flask(__name__)
 init_db()
