@@ -51,7 +51,10 @@ model = None
 
 def load_model():
     global model
-    model_path = 'model2.pth'
+    model_path = os.path.join("models", "model2.pth")
+    
+    # ✅ تأكد من وجود مجلد models
+    os.makedirs("models", exist_ok=True)
 
     try:
         if not os.path.exists(model_path):
