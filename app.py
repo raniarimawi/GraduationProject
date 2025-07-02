@@ -51,16 +51,14 @@ model = None
 
 def load_model():
     global model
-    model_path = os.path.join("models", "model2.pth")
-    
-    # ✅ تأكد من وجود مجلد models
-    os.makedirs("models", exist_ok=True)
+    model_path = 'model2.pth'
 
     try:
         if not os.path.exists(model_path):
-            print("🔻 Model not found. Downloading from Google Drive...")
-            url = 'https://drive.google.com/uc?id=1hR0NRdhtdzewxEt3hjnpo2D65hOmzvdu'
-            gdown.download(url, model_path, quiet=False)
+            print("🔻 Model not found. Downloading from GitHub release...")
+            url = 'https://github.com/raniarimawi/GraduationProject/releases/download/v1.0/model2.pth'
+            import urllib.request
+            urllib.request.urlretrieve(url, model_path)
             print("✅ model2.pth downloaded successfully.")
 
         print(f"📁 Loading model from: {os.path.abspath(model_path)}")
@@ -76,6 +74,8 @@ def load_model():
     except Exception as e:
         print(f"❌ Error loading model: {str(e)}")
         return False
+
+
 
 
 
