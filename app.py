@@ -63,13 +63,14 @@ def load_model():
         model.load_state_dict(checkpoint)
         model.to(device)
         model.eval()
-
         print("✅ Model loaded successfully!")
+
         return True
 
     except Exception as e:
         print(f"❌ Error loading model: {str(e)}")
         return False
+
 # Your disease classes (update these to match your model)
 class_names = [
     'Eczema', 'Warts Molluscum','Melanoma', 'Atopic Dermatitis',
