@@ -76,27 +76,15 @@ model = None
 
 def load_model():
     global model
-    model_path = 'model2.pth'
-
-    try:
-        if not os.path.exists(model_path):
-            print("🔻 Downloading model from Google Drive...")
-            url = 'https://drive.google.com/uc?export=download&id=1hR0NRdhtdzewxEt3hjnpo2D65hOmzvdu'
-            urllib.request.urlretrieve(url, model_path)
-            print("✅ model2.pth downloaded successfully.")
-
-        model = DenseNetModel(num_classes=10)
-        checkpoint = torch.load(model_path, map_location=device)
-        model.load_state_dict(checkpoint)
-        model.to(device)
-        model.eval()
-        print("✅ Model loaded successfully!")
-
-        return True
-
-    except Exception as e:
-        print(f"❌ Error loading model: {str(e)}")
+    model_path = os.path.join("models", "model2.pth")
+    if not os.path.exists(model_path):
+        print(f"❌ Model file not found at {model_path}")
         return False
+    model = torch.load(model_path, map_location=torch.device('cpu'))
+    model.eval()
+    print("✅ Model loaded successfully.")
+    return True
+
 
 # Your disease classes (update these to match your model)
 class_names = [
