@@ -50,7 +50,7 @@ print(f"Using device: {device}")
 model = None
 
 def download_model_from_huggingface():
-    url = "https://drive.google.com/uc?id=1hR0NRdhtdzewxEt3hjnpo2D65hOmzvdu"  # رابط Google Drive بصيغة مباشرة
+    url = "https://drive.google.com/uc?id=1EbRSDrvXiFlUgs0KH1jz4DhkOFwqCj_i"  # رابط Google Drive بصيغة مباشرة
     local_path = "model2.pth"
 
     # لو كان في نسخة قديمة ناقصة أو فيها مشكلة، نحذفها
@@ -70,7 +70,7 @@ def load_model():
     model_path = "model2.pth"
     if not os.path.exists(model_path):
         print("🔻 Downloading model from Google Drive with gdown...")
-        url = "https://drive.google.com/uc?id=1hR0NRdhtdzewxEt3hjnpo2D65hOmzvdu"
+        url = "https://drive.google.com/uc?id=1EbRSDrvXiFlUgs0KH1jz4DhkOFwqCj_i"
         gdown.download(url, model_path, quiet=False)
         print("✅ Model downloaded.")
 
