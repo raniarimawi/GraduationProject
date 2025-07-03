@@ -18,18 +18,6 @@ import gdown
 
 
 app = flask.Flask(__name__)
-
-# Load model when the app starts, even on Gunicorn
-print("🚀 Starting PyTorch Flask server...")
-print(f"📍 Working directory: {os.getcwd()}")
-print(f"🐍 PyTorch version: {torch.__version__}")
-
-if load_model():
-    print("✅ Server ready!")
-else:
-    print("⚠️ Server starting without model")
-
-
 init_db()
 CORS(app)
 password_reset_codes = {}
@@ -78,16 +66,25 @@ def load_model():
         model = DenseNetModel(num_classes=10)
         checkpoint = torch.load(model_path, map_location=device)
         model.load_state_dict(checkpoint)
-        model.to(device)
+                model.to(device)
         model.eval()
         print("✅ Model loaded successfully!")
         return True
 
     except Exception as e:
         print(f"❌ Error loading model: {str(e)}")
-        import traceback
-        traceback.print_exc()  
         return False
+
+# 🟢 هنا ضعي طباعة الحالة واستدعاء load_model()
+print("🚀 Starting PyTorch Flask server...")
+print(f"📍 Working directory: {os.getcwd()}")
+print(f"🐍 PyTorch version: {torch.__version__}")
+
+if load_model():
+    print("✅ Server ready!")
+else:
+    print("⚠️ Server starting without model")
+
 
 
 
