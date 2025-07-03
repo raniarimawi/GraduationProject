@@ -13,9 +13,7 @@ import numpy as np
 from PIL import Image
 import io
 import os
-import urllib.request
-import gdown  
-
+import requests
 
 app = flask.Flask(__name__)
 init_db()
@@ -49,26 +47,36 @@ print(f"Using device: {device}")
 # Global model variable
 model = None
 
+
+def download_model_from_huggingface():
+    url = "https://huggingface.co/falamengo/skin-model/resolve/main/model2.pth"
+    local_path = "model2.pth"
+
+    if not os.path.exists(local_path):
+        print("🔻 Downloading model from Hugging Face...")
+        response = requests.get(url, stream=True)
+        with open(local_path, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        print("✅ Model downloaded from Hugging Face.")
+
 def load_model():
     global model
     model_path = 'model2.pth'
     try:
         if not os.path.exists(model_path):
-            # تحميل النموذج
-            url = 'https://github.com/xxx/model2.pth'
-            urllib.request.urlretrieve(url, model_path)
+            download_model_from_huggingface()
 
         model = DenseNetModel(num_classes=10)
         checkpoint = torch.load(model_path, map_location=device)
         model.load_state_dict(checkpoint)
-        model.to(device)            # ✔ نفس المستوى
-        model.eval()                # ✔ نفس المستوى
+        model.to(device)
+        model.eval()
         print("✅ Model loaded successfully!")
         return True
     except Exception as e:
         print(f"❌ Error loading model: {e}")
         return False
-
 
 # 🟢 هنا ضعي طباعة الحالة واستدعاء load_model()
 print("🚀 Starting PyTorch Flask server...")
@@ -95,6 +103,7 @@ transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize([0.5]*3, [0.5]*3)  # Same as training
 ])
+
 
 def send_verification_email(email):
     code = str(random.randint(100000, 999999))
