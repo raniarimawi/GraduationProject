@@ -47,7 +47,7 @@ print(f"Using device: {device}")
 model = None
 
 def download_model_from_huggingface():
-    url = "https://huggingface.co/falamengo/skin-model/resolve/main/model2.pth"  # رابط Google Drive بصيغة مباشرة
+    url = "https://drive.google.com/uc?id=1hR0NRdhtdzewxEt3hjnpo2D65hOmzvdu"  # رابط Google Drive بصيغة مباشرة
     local_path = "model2.pth"
 
     # لو كان في نسخة قديمة ناقصة أو فيها مشكلة، نحذفها
