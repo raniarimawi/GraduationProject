@@ -44,7 +44,7 @@ class DenseNetModel(nn.Module):
 
 # Device setup
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Using device: {device}"
+print(f"Using device: {device}")
 
 # Global model variable
 model = None
