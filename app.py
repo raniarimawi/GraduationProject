@@ -46,7 +46,7 @@ model = None
 
 
 def download_model_from_huggingface():
-    url = "https://huggingface.co/falamengo/skin-model/resolve/main/model2.pth"
+    url = "https://github.com/raniarimawi/GraduationProject/releases/download/v1.0/model2.pth"
     local_path = "model2.pth"
 
     if not os.path.exists(local_path):
