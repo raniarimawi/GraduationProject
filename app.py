@@ -27,16 +27,17 @@ model = None
 
 class DenseNetModel(nn.Module):
     def __init__(self, num_classes=10):
-        super().__init__()
-        # Use smaller DenseNet
-        self.model = models.densenet121(weights=models.DenseNet121_Weights.IMAGENET1K_V1)
-        in_features = self.model.classifier.in_features
+        super(DenseNetModel, self).__init__()
+        self.model = models.densenet161(weights=models.DenseNet161_Weights.IMAGENET1K_V1)
+        num_features = self.model.classifier.in_features
         self.model.classifier = nn.Sequential(
-            nn.Linear(in_features, 512),
-            nn.ReLU(), nn.Dropout(0.4),
-            nn.Linear(512, 256),
-            nn.ReLU(), nn.Dropout(0.4),
-            nn.Linear(256, num_classes)
+            nn.Linear(num_features, 1024),
+            nn.ReLU(),
+            nn.Dropout(0.4),
+            nn.Linear(1024, 512),
+            nn.ReLU(),
+            nn.Dropout(0.4),
+            nn.Linear(512, num_classes)
         )
 
     def forward(self, x):
