@@ -25,15 +25,12 @@ password_reset_codes = {}
 class DenseNetModel(nn.Module):
     def __init__(self, num_classes=10):
         super(DenseNetModel, self).__init__()
-        self.model = models.densenet161(weights=models.DenseNet161_Weights.IMAGENET1K_V1)
-        num_features = self.model.classifier.in_features
-        self.model.classifier = nn.Sequential(
-            nn.Linear(num_features, 1024),
+        self.model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
+        num_features = self.model.fc.in_features
+        self.model.fc = nn.Sequential(
+            nn.Linear(num_features, 512),
             nn.ReLU(),
-            nn.Dropout(0.4),
-            nn.Linear(1024, 512),
-            nn.ReLU(),
-            nn.Dropout(0.4),
+            nn.Dropout(0.3),
             nn.Linear(512, num_classes)
         )
 
