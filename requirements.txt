@@ -4,6 +4,7 @@ torch
 torchvision
 pillow
 numpy
+gdown
 requests
 gunicorn
-gdown
+

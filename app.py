@@ -14,6 +14,8 @@ from PIL import Image
 import io
 import os
 import requests
+import gdown
+
 
 app = flask.Flask(__name__)
 init_db()
@@ -44,18 +46,21 @@ print(f"Using device: {device}")
 # Global model variable
 model = None
 
-
 def download_model_from_huggingface():
-    url = "https://huggingface.co/falamengo/skin-model/resolve/main/model2.pth"
+    url = "https://huggingface.co/falamengo/skin-model/resolve/main/model2.pth"  # رابط Google Drive بصيغة مباشرة
     local_path = "model2.pth"
 
-    if not os.path.exists(local_path):
-        print("🔻 Downloading model from Hugging Face...")
-        response = requests.get(url, stream=True)
-        with open(local_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-        print("✅ Model downloaded from Hugging Face.")
+    # لو كان في نسخة قديمة ناقصة أو فيها مشكلة، نحذفها
+    if os.path.exists(local_path):
+        print("🗑️ Removing old model file...")
+        os.remove(local_path)
+
+    print("🔻 Downloading model from Google Drive with gdown...")
+    try:
+        gdown.download(url, local_path, quiet=False)
+        print("✅ Model downloaded from Google Drive.")
+    except Exception as e:
+        print(f"❌ Failed to download model: {e}")
 
 def load_model():
     global model
