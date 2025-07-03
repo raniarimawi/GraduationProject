@@ -70,7 +70,7 @@ def load_model():
     model_path = "model2.pth"
 
     if not os.path.exists(model_path):
-        print("🔻 Downloading quantized scripted model from Google Drive...")
+        print("🔻 Downloading model from Google Drive...")
         url = "https://drive.google.com/uc?id=1EbRSDrvXiFlUgs0KH1jz4DhkOFwqCj_i"
         try:
             gdown.download(url, model_path, quiet=False)
@@ -80,9 +80,11 @@ def load_model():
             return False
 
     try:
-        model = torch.jit.load(model_path, map_location=device)
+        model = DenseNetModel(num_classes=10)
+        checkpoint = torch.load(model_path, map_location=device)
+        model.load_state_dict(checkpoint)
         model.eval()
-        print("✅ TorchScript model loaded successfully.")
+        print("✅ Model loaded using torch.load().")
         return True
     except Exception as e:
         print(f"❌ Failed to load model: {e}")
