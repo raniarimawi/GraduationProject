@@ -65,7 +65,7 @@ def load_model():
             download_model_from_huggingface()
 
         model = DenseNetModel(num_classes=10)
-        checkpoint = torch.load(model_path, map_location=device)
+        checkpoint = torch.load(model_path, map_location=device, weights_only=False)
         model.load_state_dict(checkpoint)
         model.to(device)
         model.eval()
