@@ -15,6 +15,7 @@ import io
 import os
 import requests
 import gdown
+from torch.serialization import add_safe_globals
 
 
 app = flask.Flask(__name__)
@@ -80,11 +81,14 @@ def load_model():
             return False
 
     try:
+        # ✅ Allow your class to be used in torch.load
+        add_safe_globals({'DenseNetModel': DenseNetModel})
+
         model = DenseNetModel(num_classes=10)
-        checkpoint = torch.load(model_path, map_location=device)
+        checkpoint = torch.load(model_path, map_location=device, weights_only=False)
         model.load_state_dict(checkpoint)
         model.eval()
-        print("✅ Model loaded using torch.load().")
+        print("✅ Model loaded successfully.")
         return True
     except Exception as e:
         print(f"❌ Failed to load model: {e}")
