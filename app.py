@@ -52,28 +52,23 @@ model = None
 def load_model():
     global model
     model_path = 'model2.pth'
-
     try:
         if not os.path.exists(model_path):
-            print("🔻 Model not found. Downloading from GitHub release...")
-            url = 'https://github.com/raniarimawi/GraduationProject/releases/download/v1.0/model2.pth'
-            import urllib.request
+            # تحميل النموذج
+            url = 'https://github.com/xxx/model2.pth'
             urllib.request.urlretrieve(url, model_path)
-            print("✅ model2.pth downloaded successfully.")
-
-        print(f"📁 Loading model from: {os.path.abspath(model_path)}")
 
         model = DenseNetModel(num_classes=10)
         checkpoint = torch.load(model_path, map_location=device)
         model.load_state_dict(checkpoint)
-                model.to(device)
-        model.eval()
+        model.to(device)            # ✔ نفس المستوى
+        model.eval()                # ✔ نفس المستوى
         print("✅ Model loaded successfully!")
         return True
-
     except Exception as e:
-        print(f"❌ Error loading model: {str(e)}")
+        print(f"❌ Error loading model: {e}")
         return False
+
 
 # 🟢 هنا ضعي طباعة الحالة واستدعاء load_model()
 print("🚀 Starting PyTorch Flask server...")
@@ -84,11 +79,6 @@ if load_model():
     print("✅ Server ready!")
 else:
     print("⚠️ Server starting without model")
-
-
-
-
-
 
 
 # Your disease classes (update these to match your model)
