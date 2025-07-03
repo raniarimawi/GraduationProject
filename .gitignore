@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+*.log
+
+# Environment
+.env
+.venv/
+venv/
+ENV/
+env/
+pip-log.txt
+
+# VSCode or IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model files (if downloaded dynamically)
+model2.pth
+
+# Railway specific
+railway.json
