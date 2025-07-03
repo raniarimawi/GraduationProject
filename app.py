@@ -16,6 +16,7 @@ import os
 import requests
 import gdown
 from torch.serialization import add_safe_globals
+from torchvision.models import resnet18, ResNet18_Weights
 
 
 app = flask.Flask(__name__)
@@ -25,18 +26,15 @@ password_reset_codes = {}
 
 model = None
 
-class DenseNetModel(nn.Module):
+class ResNet18Model(nn.Module):
     def __init__(self, num_classes=10):
-        super(DenseNetModel, self).__init__()
-        self.model = models.densenet161(weights=models.DenseNet161_Weights.IMAGENET1K_V1)
-        num_features = self.model.classifier.in_features
-        self.model.classifier = nn.Sequential(
-            nn.Linear(num_features, 1024),
+        super(ResNet18Model, self).__init__()
+        self.model = resnet18(weights=ResNet18_Weights.DEFAULT)
+        num_features = self.model.fc.in_features
+        self.model.fc = nn.Sequential(
+            nn.Linear(num_features, 512),
             nn.ReLU(),
-            nn.Dropout(0.4),
-            nn.Linear(1024, 512),
-            nn.ReLU(),
-            nn.Dropout(0.4),
+            nn.Dropout(0.3),
             nn.Linear(512, num_classes)
         )
 
@@ -74,15 +72,17 @@ def load_model():
     if not os.path.exists(model_path):
         print("🔻 Downloading model from Google Drive...")
         url = "https://drive.google.com/uc?id=1t_UUouGv0hsrYL6vLSymRfUx1HXst_ro"  
-        try:
-            gdown.download(url, model_path, quiet=False)
+         try:
+            response = requests.get(url)
+            with open(model_path, 'wb') as f:
+                f.write(response.content)
             print("✅ Model downloaded successfully.")
         except Exception as e:
             print(f"❌ Failed to download model: {e}")
             return False
 
     try:
-        model = DenseNetModel(num_classes=10)
+        model = ResNet18Model(num_classes=10)
         state_dict = torch.load(model_path, map_location=device)
         model.load_state_dict(state_dict)
         model.to(device)
