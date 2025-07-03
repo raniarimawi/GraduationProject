@@ -53,7 +53,7 @@ model = None
 
 def download_model_from_huggingface():
     url = "https://drive.google.com/uc?id=1EbRSDrvXiFlUgs0KH1jz4DhkOFwqCj_i"  # رابط Google Drive بصيغة مباشرة
-    local_path = "model2.pth"
+    local_path = "model.pth"
 
     # لو كان في نسخة قديمة ناقصة أو فيها مشكلة، نحذفها
     if os.path.exists(local_path):
@@ -67,7 +67,7 @@ def download_model_from_huggingface():
     except Exception as e:
         print(f"❌ Failed to download model: {e}")
 
-ddef load_model():
+def load_model():
     global model
     model_path = "model.pth"
     
