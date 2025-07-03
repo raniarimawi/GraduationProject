@@ -67,7 +67,7 @@ def download_model_from_huggingface():
 
 def load_model():
     global model
-    model_path = "model2_quantized_scripted.pt"
+    model_path = "model2.pth"
 
     if not os.path.exists(model_path):
         print("🔻 Downloading quantized scripted model from Google Drive...")
