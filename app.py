@@ -197,8 +197,10 @@ def verify_user_code():
 def predict():
     print("Received request at /predict")
     if model is None:
-        print("Model not loaded.")
-        return flask.jsonify({'error': 'Model not loaded. Check server logs.'}), 500
+    print("Model not loaded. Attempting to load now...")
+    if not load_model():
+        return flask.jsonify({'error': 'Model not loaded. Check logs.'}), 500
+
 
     try:
         if 'image' not in flask.request.files:
