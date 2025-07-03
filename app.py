@@ -67,7 +67,7 @@ def download_model_from_huggingface():
     except Exception as e:
         print(f"❌ Failed to download model: {e}")
 
-ddef load_model():
+def load_model():
     global model
     model_path = "model2.pth"
 
