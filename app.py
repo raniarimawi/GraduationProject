@@ -16,7 +16,7 @@ import os
 import requests
 import gdown
 from torch.serialization import add_safe_globals
-from torchvision.models import resnet18, ResNet18_Weights
+from torchvision.models import densenet161, DenseNet161_Weights
 
 
 app = flask.Flask(__name__)
@@ -26,13 +26,13 @@ password_reset_codes = {}
 
 model = None
 
-class ResNet18Model(nn.Module):
+class DenseNetModel(nn.Module):
     def __init__(self, num_classes=10):
-        super(ResNet18Model, self).__init__()
-        self.model = resnet18(weights=ResNet18_Weights.DEFAULT)
-        num_features = self.model.fc.in_features
-        self.model.fc = nn.Sequential(
-            nn.Linear(num_features, 512),
+        super(DenseNetModel, self).__init__()
+        self.model = densenet161(weights=None)  # no pre-trained weights
+        num_ftrs = self.model.classifier.in_features
+        self.model.classifier = nn.Sequential(
+            nn.Linear(num_ftrs, 512),
             nn.ReLU(),
             nn.Dropout(0.3),
             nn.Linear(512, num_classes)
