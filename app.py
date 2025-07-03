@@ -24,18 +24,18 @@ password_reset_codes = {}
 
 model = None
 
-# Define your DenseNet model class (must match your training code)
 class DenseNetModel(nn.Module):
     def __init__(self, num_classes=10):
         super().__init__()
-        self.model = models.densenet161(weights=models.DenseNet161_Weights.IMAGENET1K_V1)
+        # Use smaller DenseNet
+        self.model = models.densenet121(weights=models.DenseNet121_Weights.IMAGENET1K_V1)
         in_features = self.model.classifier.in_features
         self.model.classifier = nn.Sequential(
-            nn.Linear(in_features, 1024),
+            nn.Linear(in_features, 512),
             nn.ReLU(), nn.Dropout(0.4),
-            nn.Linear(1024, 512),
+            nn.Linear(512, 256),
             nn.ReLU(), nn.Dropout(0.4),
-            nn.Linear(512, num_classes)
+            nn.Linear(256, num_classes)
         )
 
     def forward(self, x):
@@ -44,7 +44,7 @@ class DenseNetModel(nn.Module):
 
 # Device setup
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Using device: {device}")
+print(f"Using device: {device}"
 
 # Global model variable
 model = None
@@ -67,18 +67,26 @@ def download_model_from_huggingface():
 
 def load_model():
     global model
-    model_path = "model2.pth"
-    if not os.path.exists(model_path):
-        print("🔻 Downloading model from Google Drive with gdown...")
-        url = "https://drive.google.com/uc?id=1EbRSDrvXiFlUgs0KH1jz4DhkOFwqCj_i"
-        gdown.download(url, model_path, quiet=False)
-        print("✅ Model downloaded.")
+    model_path = "model2_quantized_scripted.pt"
 
-    model = DenseNetModel(num_classes=10)
-    checkpoint = torch.load(model_path, map_location="cpu")
-    model.load_state_dict(checkpoint)
-    model.eval()
-    print("✅ Model loaded!")
+    if not os.path.exists(model_path):
+        print("🔻 Downloading quantized scripted model from Google Drive...")
+        url = "https://drive.google.com/uc?id=1EbRSDrvXiFlUgs0KH1jz4DhkOFwqCj_i"
+        try:
+            gdown.download(url, model_path, quiet=False)
+            print("✅ Model downloaded successfully.")
+        except Exception as e:
+            print(f"❌ Failed to download model: {e}")
+            return False
+
+    try:
+        model = torch.jit.load(model_path, map_location=device)
+        model.eval()
+        print("✅ TorchScript model loaded successfully.")
+        return True
+    except Exception as e:
+        print(f"❌ Failed to load model: {e}")
+        return False
 
 # 🟢 هنا ضعي طباعة الحالة واستدعاء load_model()
 print("🚀 Starting PyTorch Flask server...")
