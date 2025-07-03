@@ -80,7 +80,7 @@ def load_model():
             return False
 
     try:
-        model = ResNet18Model(num_classes=10)
+        model = DenseNetModel(num_classes=10)
         state_dict = torch.load(model_path, map_location=device)
         model.load_state_dict(state_dict)
         model.to(device)
