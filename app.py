@@ -67,33 +67,34 @@ def download_model_from_huggingface():
     except Exception as e:
         print(f"❌ Failed to download model: {e}")
 
-def load_model():
+ddef load_model():
     global model
     model_path = "model2.pth"
 
     if not os.path.exists(model_path):
-        print("🔻 Downloading model from Google Drive...")
-        url = "https://drive.google.com/uc?id=1EbRSDrvXiFlUgs0KH1jz4DhkOFwqCj_i"
+        print("🔻 Downloading model from GitHub...")
+        url = "https://github.com/raniarimawi/GraduationProject/releases/download/v1.0/model2.pth"
         try:
-            gdown.download(url, model_path, quiet=False)
+            response = requests.get(url)
+            with open(model_path, 'wb') as f:
+                f.write(response.content)
             print("✅ Model downloaded successfully.")
         except Exception as e:
             print(f"❌ Failed to download model: {e}")
             return False
 
     try:
-        # ✅ Allow your class to be used in torch.load
-        add_safe_globals({'DenseNetModel': DenseNetModel})
-
         model = DenseNetModel(num_classes=10)
-        checkpoint = torch.load(model_path, map_location=device, weights_only=False)
-        model.load_state_dict(checkpoint)
+        state_dict = torch.load(model_path, map_location=device)  # ✅ تحميل state_dict فقط
+        model.load_state_dict(state_dict)  # ✅ تحميل الأوزان
+        model.to(device)
         model.eval()
         print("✅ Model loaded successfully.")
         return True
     except Exception as e:
         print(f"❌ Failed to load model: {e}")
         return False
+
 
 # 🟢 هنا ضعي طباعة الحالة واستدعاء load_model()
 print("🚀 Starting PyTorch Flask server...")
