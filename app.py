@@ -17,7 +17,7 @@ import requests
 
 app = flask.Flask(__name__)
 init_db()
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 password_reset_codes = {}
 
 
