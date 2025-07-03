@@ -18,6 +18,18 @@ import gdown
 
 
 app = flask.Flask(__name__)
+
+# Load model when the app starts, even on Gunicorn
+print("🚀 Starting PyTorch Flask server...")
+print(f"📍 Working directory: {os.getcwd()}")
+print(f"🐍 PyTorch version: {torch.__version__}")
+
+if load_model():
+    print("✅ Server ready!")
+else:
+    print("⚠️ Server starting without model")
+
+
 init_db()
 CORS(app)
 password_reset_codes = {}
@@ -73,7 +85,10 @@ def load_model():
 
     except Exception as e:
         print(f"❌ Error loading model: {str(e)}")
+        import traceback
+        traceback.print_exc()  
         return False
+
 
 
 
