@@ -67,17 +67,15 @@ def download_model_from_huggingface():
     except Exception as e:
         print(f"❌ Failed to download model: {e}")
 
-def load_model():
+ddef load_model():
     global model
-    model_path = "model2.pth"
-
+    model_path = "model.pth"
+    
     if not os.path.exists(model_path):
-        print("🔻 Downloading model from GitHub...")
-        url = "https://github.com/raniarimawi/GraduationProject/releases/download/v1.0/model2.pth"
+        print("🔻 Downloading model from Google Drive...")
+        url = "https://drive.google.com/uc?id=1t_UUouGv0hsrYL6vLSymRfUx1HXst_ro"  
         try:
-            response = requests.get(url)
-            with open(model_path, 'wb') as f:
-                f.write(response.content)
+            gdown.download(url, model_path, quiet=False)
             print("✅ Model downloaded successfully.")
         except Exception as e:
             print(f"❌ Failed to download model: {e}")
@@ -85,8 +83,8 @@ def load_model():
 
     try:
         model = DenseNetModel(num_classes=10)
-        state_dict = torch.load(model_path, map_location=device)  # ✅ تحميل state_dict فقط
-        model.load_state_dict(state_dict)  # ✅ تحميل الأوزان
+        state_dict = torch.load(model_path, map_location=device)
+        model.load_state_dict(state_dict)
         model.to(device)
         model.eval()
         print("✅ Model loaded successfully.")
@@ -94,6 +92,7 @@ def load_model():
     except Exception as e:
         print(f"❌ Failed to load model: {e}")
         return False
+
 
 
 # 🟢 هنا ضعي طباعة الحالة واستدعاء load_model()
