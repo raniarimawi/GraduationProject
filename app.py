@@ -196,11 +196,11 @@ def verify_user_code():
 @app.route('/predict', methods=['POST'])
 def predict():
     print("Received request at /predict")
+    global model
     if model is None:
-    print("Model not loaded. Attempting to load now...")
-    if not load_model():
-        return flask.jsonify({'error': 'Model not loaded. Check logs.'}), 500
-
+        print("Model not loaded. Attempting to load now...")
+        if not load_model():
+            return flask.jsonify({'error': 'Model not loaded. Check logs.'}), 500
 
     try:
         if 'image' not in flask.request.files:
@@ -216,10 +216,8 @@ def predict():
         file_bytes = file.read()
         image = Image.open(io.BytesIO(file_bytes)).convert('RGB')
 
-        # Preprocess image
         image_tensor = transform(image).unsqueeze(0).to(device)
 
-        # Make prediction
         with torch.no_grad():
             outputs = model(image_tensor)
             probabilities = torch.nn.functional.softmax(outputs[0], dim=0)
