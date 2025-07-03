@@ -22,20 +22,19 @@ init_db()
 CORS(app, resources={r"/*": {"origins": "*"}})
 password_reset_codes = {}
 
+model = None
 
 # Define your DenseNet model class (must match your training code)
 class DenseNetModel(nn.Module):
     def __init__(self, num_classes=10):
-        super(DenseNetModel, self).__init__()
+        super().__init__()
         self.model = models.densenet161(weights=models.DenseNet161_Weights.IMAGENET1K_V1)
-        num_features = self.model.classifier.in_features
+        in_features = self.model.classifier.in_features
         self.model.classifier = nn.Sequential(
-            nn.Linear(num_features, 1024),
-            nn.ReLU(),
-            nn.Dropout(0.4),
+            nn.Linear(in_features, 1024),
+            nn.ReLU(), nn.Dropout(0.4),
             nn.Linear(1024, 512),
-            nn.ReLU(),
-            nn.Dropout(0.4),
+            nn.ReLU(), nn.Dropout(0.4),
             nn.Linear(512, num_classes)
         )
 
@@ -68,21 +67,18 @@ def download_model_from_huggingface():
 
 def load_model():
     global model
-    model_path = 'model2.pth'
-    try:
-        if not os.path.exists(model_path):
-            download_model_from_huggingface()
+    model_path = "model2.pth"
+    if not os.path.exists(model_path):
+        print("🔻 Downloading model from Google Drive with gdown...")
+        url = "https://drive.google.com/uc?id=1hR0NRdhtdzewxEt3hjnpo2D65hOmzvdu"
+        gdown.download(url, model_path, quiet=False)
+        print("✅ Model downloaded.")
 
-        model = DenseNetModel(num_classes=10)
-        checkpoint = torch.load(model_path, map_location=device, weights_only=False)
-        model.load_state_dict(checkpoint)
-        model.to(device)
-        model.eval()
-        print("✅ Model loaded successfully!")
-        return True
-    except Exception as e:
-        print(f"❌ Error loading model: {e}")
-        return False
+    model = DenseNetModel(num_classes=10)
+    checkpoint = torch.load(model_path, map_location="cpu")
+    model.load_state_dict(checkpoint)
+    model.eval()
+    print("✅ Model loaded!")
 
 # 🟢 هنا ضعي طباعة الحالة واستدعاء load_model()
 print("🚀 Starting PyTorch Flask server...")
