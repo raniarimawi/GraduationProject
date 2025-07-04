@@ -13,13 +13,12 @@ import numpy as np
 from PIL import Image
 import io
 import os
-import urllib.request
-import gdown
+import requests
+from gdown import download
+from torch.serialization import add_safe_globals
 from torchvision.models import mobilenet_v2, MobileNet_V2_Weights
 
-
 app = flask.Flask(__name__)
-
 init_db()
 CORS(app, resources={r"/*": {"origins": "*"}})
 password_reset_codes = {}
@@ -54,34 +53,50 @@ print(f"Using device: {device}")
 model = None
 
 
+def download_model_from_gdrive():
+    url = "https://drive.google.com/uc?id=12ASf_FHdmt_JjNOIepkU_zh74y8NofZM"
+    local_path = "mobilenetv2_model.pth"
+
+    if not os.path.exists(local_path):
+        print("🔻 Downloading model from Google Drive with gdown...")
+        try:
+            download(url, local_path, quiet=False)
+            print("✅ Model downloaded from Google Drive.")
+        except Exception as e:
+            print(f"❌ Failed to download model: {e}")
+
+
 def load_model():
     global model
-    model_path = 'mobilenetv2_model_quantized.pth'
+    model_path = "mobilenetv2_model.pth"
+
+    if not os.path.exists(model_path):
+        download_model_from_gdrive()
 
     try:
-        if not os.path.exists(model_path):
-            print("🔻 Model not found. Downloading from GitHub release...")
-            url = 'https://drive.google.com/uc?export=download&id=12ASf_FHdmt_JjNOIepkU_zh74y8NofZM'
-            import urllib.request
-            urllib.request.urlretrieve(url, model_path)
-            print("✅ model2.pth downloaded successfully.")
-
-        print(f"📁 Loading model from: {os.path.abspath(model_path)}")
-
         model = MobileNetModel(num_classes=10)
         checkpoint = torch.load(model_path, map_location=device)
         model.load_state_dict(checkpoint)
-        model.to(device)
         model.eval()
-        print("✅ Model loaded successfully!")
+        model.to(device)
+        print("✅ Model loaded successfully.")
         return True
-
     except Exception as e:
-        print(f"❌ Error loading model: {str(e)}")
+        print(f"❌ Failed to load model: {e}")
         return False
 
 
-# Your disease classes (update these to match your model)
+# Startup logs
+print("🚀 Starting PyTorch Flask server...")
+print(f"📍 Working directory: {os.getcwd()}")
+print(f"🐍 PyTorch version: {torch.__version__}")
+
+if load_model():
+    print("✅ Server ready!")
+else:
+    print("⚠️ Server starting without model")
+
+
 class_names = [
     'Eczema', 'Warts Molluscum', 'Melanoma', 'Atopic Dermatitis',
     'Basal Cell Carcinoma', 'Melanocytic Nevi',
@@ -89,11 +104,10 @@ class_names = [
     'Tinea Ringworm'
 ]
 
-# Image preprocessing (must match your training preprocessing)
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
-    transforms.Normalize([0.5] * 3, [0.5] * 3)  # Same as training
+    transforms.Normalize([0.5] * 3, [0.5] * 3)
 ])
 
 
@@ -142,7 +156,7 @@ def forgot_password():
         server.starttls()
         server.login("rrimawi123@gmail.com", "hcwkzyzfqrnyhtov")
         message = f"Subject: Password Reset Code\n\nYour reset code is: {code}"
-        server.sendmail("YOUR_EMAIL@gmail.com", email, message)  # ✅ صحح الإيميل هنا
+        server.sendmail("YOUR_EMAIL@gmail.com", email, message)
         server.quit()
         return flask.jsonify({'message': 'Reset code sent successfully'})
     except Exception as e:
@@ -187,10 +201,12 @@ def verify_user_code():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    print("Received request at /predict")
+    print("✅ /predict endpoint hit.")
+    global model
     if model is None:
-        print("Model not loaded.")
-        return flask.jsonify({'error': 'Model not loaded. Check server logs.'}), 500
+        print("Model not loaded. Attempting to load now...")
+        if not load_model():
+            return flask.jsonify({'error': 'Model not loaded. Check logs.'}), 500
 
     try:
         if 'image' not in flask.request.files:
@@ -206,10 +222,8 @@ def predict():
         file_bytes = file.read()
         image = Image.open(io.BytesIO(file_bytes)).convert('RGB')
 
-        # Preprocess image
         image_tensor = transform(image).unsqueeze(0).to(device)
 
-        # Make prediction
         with torch.no_grad():
             outputs = model(image_tensor)
             probabilities = torch.nn.functional.softmax(outputs[0], dim=0)
@@ -229,10 +243,8 @@ def predict():
         return flask.jsonify({'error': str(e)}), 500
 
 
-# Don't forget to include a health check route to monitor server status.
 @app.route('/health', methods=['GET'])
 def health_check():
-    print("Health check endpoint accessed.")
     return flask.jsonify({
         'status': 'running',
         'model_type': 'PyTorch',
@@ -274,14 +286,4 @@ def login_user():
 
 
 if __name__ == '__main__':
-    print("🚀 Starting PyTorch Flask server...")
-    print(f"📍 Working directory: {os.getcwd()}")
-    print(f"🐍 PyTorch version: {torch.__version__}")
-
-    # Load the model
-    if load_model():
-        print("✅ Server ready!")
-    else:
-        print("⚠️ Server starting without model")
-
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=5000)
