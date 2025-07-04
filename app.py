@@ -56,7 +56,7 @@ model = None
 
 
 def download_model_from_huggingface():
-    url = "https://drive.google.com/uc?id=1TH9wuMZA4XJsdw2momy2_11_MRFIg1zU"  # رابط Google Drive بصيغة مباشرة
+    url = "https://drive.google.com/uc?id=14NCkv_gpolK0s5CzlUPB2AhPw7lptR8x"  # رابط Google Drive بصيغة مباشرة
     local_path = "mobilenetv2_model_quantized.pth"
 
     # لو كان في نسخة قديمة ناقصة أو فيها مشكلة، نحذفها
@@ -78,7 +78,7 @@ def load_model():
 
     if not os.path.exists(model_path):
         print("🔻 Downloading model from Google Drive...")
-        url = "https://drive.google.com/uc?id=1TH9wuMZA4XJsdw2momy2_11_MRFIg1zU"
+        url = "https://drive.google.com/uc?id=14NCkv_gpolK0s5CzlUPB2AhPw7lptR8x"
         try:
             download(url, model_path, quiet=False)
             print("✅ Model downloaded successfully.")
@@ -87,11 +87,9 @@ def load_model():
             return False
 
     try:
-        model = MobileNetModel(num_classes=10)
-        state_dict = torch.load(model_path, map_location=device)
-        model.load_state_dict(state_dict)
-        model.to(device)
+        model = torch.load(model_path, map_location=device)  # ← تحميل النموذج الكامل
         model.eval()
+        model.to(device)
         print("✅ Model loaded successfully.")
         return True
     except Exception as e:
