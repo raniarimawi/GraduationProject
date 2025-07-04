@@ -91,10 +91,10 @@ print("🚀 Starting PyTorch Flask server...")
 print(f"📍 Working directory: {os.getcwd()}")
 print(f"🐍 PyTorch version: {torch.__version__}")
 
-if load_model():
-    print("✅ Server ready!")
-else:
-    print("⚠️ Server starting without model")
+#if load_model():
+#    print("✅ Server ready!")
+#else:
+#    print("⚠️ Server starting without model")
 
 
 class_names = [
