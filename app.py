@@ -72,7 +72,7 @@ def download_model_from_huggingface():
 
 def load_model():
     global model
-    model_path = "model.pth"
+    model_path = "mobilenetv2_model.pth"
 
     if not os.path.exists(model_path):
         print("🔻 Downloading model from Google Drive...")
@@ -307,5 +307,6 @@ if __name__ == '__main__':
         print("✅ Server ready!")
     else:
         print("⚠️ Server starting without model")
-    
+    app.run(debug=False, host='0.0.0.0', port=5000)
+
     
