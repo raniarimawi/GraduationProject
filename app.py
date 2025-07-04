@@ -14,11 +14,9 @@ from PIL import Image
 import io
 import os
 import requests
-import gdown
+from gdown import download
 from torch.serialization import add_safe_globals
 from torchvision.models import mobilenet_v2, MobileNet_V2_Weights
-
-
 
 app = flask.Flask(__name__)
 init_db()
@@ -26,6 +24,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 password_reset_codes = {}
 
 model = None
+
 
 # ---------- MOBILENETV2 MODEL ----------
 class MobileNetModel(nn.Module):
@@ -47,12 +46,14 @@ class MobileNetModel(nn.Module):
     def forward(self, x):
         return self.model(x)
 
+
 # Device setup
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 # Global model variable
 model = None
+
 
 def download_model_from_huggingface():
     url = "https://drive.google.com/uc?id=12ASf_FHdmt_JjNOIepkU_zh74y8NofZM"  # رابط Google Drive بصيغة مباشرة
@@ -65,10 +66,11 @@ def download_model_from_huggingface():
 
     print("🔻 Downloading model from Google Drive with gdown...")
     try:
-        gdown.download(url, local_path, quiet=False)
+        download(url, local_path, quiet=False)
         print("✅ Model downloaded from Google Drive.")
     except Exception as e:
         print(f"❌ Failed to download model: {e}")
+
 
 def load_model():
     global model
@@ -78,7 +80,7 @@ def load_model():
         print("🔻 Downloading model from Google Drive...")
         url = "https://drive.google.com/uc?id=12ASf_FHdmt_JjNOIepkU_zh74y8NofZM"
         try:
-            gdown.download(url, model_path, quiet=False)
+            download(url, model_path, quiet=False)
             print("✅ Model downloaded successfully.")
         except Exception as e:
             print(f"❌ Failed to download model: {e}")
@@ -86,7 +88,8 @@ def load_model():
 
     try:
         model = MobileNetModel(num_classes=10)
-        model.load_state_dict(torch.load(model_path, map_location=device))
+        state_dict = torch.load(model_path, map_location=device)
+        model.load_state_dict(state_dict)
         model.to(device)
         model.eval()
         print("✅ Model loaded successfully.")
@@ -94,7 +97,6 @@ def load_model():
     except Exception as e:
         print(f"❌ Failed to load model: {e}")
         return False
-
 
 
 # 🟢 هنا ضعي طباعة الحالة واستدعاء load_model()
@@ -107,10 +109,9 @@ if load_model():
 else:
     print("⚠️ Server starting without model")
 
-
 # Your disease classes (update these to match your model)
 class_names = [
-    'Eczema', 'Warts Molluscum','Melanoma', 'Atopic Dermatitis',
+    'Eczema', 'Warts Molluscum', 'Melanoma', 'Atopic Dermatitis',
     'Basal Cell Carcinoma', 'Melanocytic Nevi',
     'Benign Keratosis', 'Psoriasis', 'Seborrheic Keratoses',
     'Tinea Ringworm'
@@ -120,7 +121,7 @@ class_names = [
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
-    transforms.Normalize([0.5]*3, [0.5]*3)  # Same as training
+    transforms.Normalize([0.5] * 3, [0.5] * 3)  # Same as training
 ])
 
 
@@ -154,6 +155,7 @@ def register_user():
         return flask.jsonify({'error': 'User already exists'}), 400
 
     return flask.jsonify({'message': 'Verification code sent', 'email': email})
+
 
 @app.route('/forgot-password', methods=['POST'])
 def forgot_password():
@@ -201,7 +203,6 @@ def reset_password():
         return flask.jsonify({'error': 'Invalid code'}), 400
 
 
-
 @app.route('/verify-code', methods=['POST'])
 def verify_user_code():
     data = flask.request.get_json()
@@ -214,6 +215,8 @@ def verify_user_code():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    print("✅ /predict endpoint hit.")
+    print("📦 request.files keys:", list(flask.request.files.keys()))
     print("Received request at /predict")
     global model
     if model is None:
@@ -255,6 +258,7 @@ def predict():
         print(f"Prediction error: {str(e)}")
         return flask.jsonify({'error': str(e)}), 500
 
+
 # Don't forget to include a health check route to monitor server status.
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -267,6 +271,7 @@ def health_check():
         'working_directory': os.getcwd()
     })
 
+
 @app.route('/', methods=['GET'])
 def home():
     return flask.jsonify({
@@ -276,6 +281,7 @@ def home():
             'predict': '/predict (POST with image file)'
         }
     })
+
 
 @app.route('/login', methods=['POST'])
 def login_user():
@@ -301,7 +307,7 @@ if __name__ == '__main__':
     print("🚀 Starting PyTorch Flask server...")
     print(f"📍 Working directory: {os.getcwd()}")
     print(f"🐍 PyTorch version: {torch.__version__}")
-    
+
     # Load the model
     if load_model():
         print("✅ Server ready!")
@@ -309,4 +315,4 @@ if __name__ == '__main__':
         print("⚠️ Server starting without model")
     app.run(debug=False, host='0.0.0.0', port=5000)
 
-    
+
