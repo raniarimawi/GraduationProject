@@ -56,8 +56,8 @@ model = None
 
 
 def download_model_from_huggingface():
-    url = "https://drive.google.com/uc?id=12ASf_FHdmt_JjNOIepkU_zh74y8NofZM"  # رابط Google Drive بصيغة مباشرة
-    local_path = "mobilenetv2_model.pth"
+    url = "https://drive.google.com/uc?id=1TH9wuMZA4XJsdw2momy2_11_MRFIg1zU"  # رابط Google Drive بصيغة مباشرة
+    local_path = "mobilenetv2_model_quantized.pth"
 
     # لو كان في نسخة قديمة ناقصة أو فيها مشكلة، نحذفها
     if os.path.exists(local_path):
@@ -74,11 +74,11 @@ def download_model_from_huggingface():
 
 def load_model():
     global model
-    model_path = "mobilenetv2_model.pth"
+    model_path = "mobilenetv2_model_quantized.pth"
 
     if not os.path.exists(model_path):
         print("🔻 Downloading model from Google Drive...")
-        url = "https://drive.google.com/uc?id=12ASf_FHdmt_JjNOIepkU_zh74y8NofZM"
+        url = "https://drive.google.com/uc?id=1TH9wuMZA4XJsdw2momy2_11_MRFIg1zU"
         try:
             download(url, model_path, quiet=False)
             print("✅ Model downloaded successfully.")
