@@ -86,7 +86,7 @@ def load_model():
 
     try:
         model = MobileNetModel(num_classes=10)
-	model.load_state_dict(torch.load(model_path, map_location=device))
+             model.load_state_dict(torch.load(model_path, map_location=device))
         model.to(device)
         model.eval()
         print("✅ Model loaded successfully.")
