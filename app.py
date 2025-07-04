@@ -31,7 +31,7 @@ model = None
 class MobileNetModel(nn.Module):
     def __init__(self, num_classes):
         super(MobileNetModel, self).__init__()
-        self.model = mobilenet_v2(weights=MobileNet_V2_Weights.IMAGENET1K_V1)
+        self.model = mobilenet_v2(weights=None)
 
         for param in self.model.features.parameters():
             param.requires_grad = True  # أو False لتثبيت الميزات
@@ -308,4 +308,4 @@ if __name__ == '__main__':
     else:
         print("⚠️ Server starting without model")
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    
