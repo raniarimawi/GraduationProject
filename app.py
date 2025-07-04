@@ -13,18 +13,16 @@ import numpy as np
 from PIL import Image
 import io
 import os
-import requests
-from gdown import download
-from torch.serialization import add_safe_globals
+import urllib.request
+import gdown
 from torchvision.models import mobilenet_v2, MobileNet_V2_Weights
 
+
 app = flask.Flask(__name__)
+
 init_db()
 CORS(app, resources={r"/*": {"origins": "*"}})
 password_reset_codes = {}
-
-model = None
-
 
 # ---------- MOBILENETV2 MODEL ----------
 class MobileNetModel(nn.Module):
@@ -47,6 +45,7 @@ class MobileNetModel(nn.Module):
         return self.model(x)
 
 
+
 # Device setup
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
@@ -55,57 +54,32 @@ print(f"Using device: {device}")
 model = None
 
 
-def download_model_from_huggingface():
-    url = "https://drive.google.com/uc?id=14NCkv_gpolK0s5CzlUPB2AhPw7lptR8x"  # رابط
-    local_path = "mobilenetv2_model_quantized.pth"
-
-    # لو كان في نسخة قديمة ناقصة أو فيها مشكلة، نحذفها
-    if os.path.exists(local_path):
-        print("🗑️ Removing old model file...")
-        os.remove(local_path)
-
-    print("🔻 Downloading model from Google Drive with gdown...")
-    try:
-        download(url, local_path, quiet=False)
-        print("✅ Model downloaded from Google Drive.")
-    except Exception as e:
-        print(f"❌ Failed to download model: {e}")
-
-
 def load_model():
     global model
-    model_path = "mobilenetv2_model_quantized.pth"
-
-    if not os.path.exists(model_path):
-        print("🔻 Downloading model from Google Drive...")
-        url = "https://drive.google.com/uc?id=14NCkv_gpolK0s5CzlUPB2AhPw7lptR8x"
-        try:
-            download(url, model_path, quiet=False)
-            print("✅ Model downloaded successfully.")
-        except Exception as e:
-            print(f"❌ Failed to download model: {e}")
-            return False
+    model_path = 'mobilenetv2_model_quantized.pth'
 
     try:
-        model = torch.load(model_path, map_location=device)  # ← تحميل النموذج الكامل
-        model.eval()
+        if not os.path.exists(model_path):
+            print("🔻 Model not found. Downloading from GitHub release...")
+            url = 'https://drive.google.com/uc?export=download&id=12ASf_FHdmt_JjNOIepkU_zh74y8NofZM'
+            import urllib.request
+            urllib.request.urlretrieve(url, model_path)
+            print("✅ model2.pth downloaded successfully.")
+
+        print(f"📁 Loading model from: {os.path.abspath(model_path)}")
+
+        model = MobileNetModel(num_classes=10)
+        checkpoint = torch.load(model_path, map_location=device)
+        model.load_state_dict(checkpoint)
         model.to(device)
-        print("✅ Model loaded successfully.")
+        model.eval()
+        print("✅ Model loaded successfully!")
         return True
+
     except Exception as e:
-        print(f"❌ Failed to load model: {e}")
+        print(f"❌ Error loading model: {str(e)}")
         return False
 
-
-# 🟢 هنا ضعي طباعة الحالة واستدعاء load_model()
-print("🚀 Starting PyTorch Flask server...")
-print(f"📍 Working directory: {os.getcwd()}")
-print(f"🐍 PyTorch version: {torch.__version__}")
-
-if load_model():
-    print("✅ Server ready!")
-else:
-    print("⚠️ Server starting without model")
 
 # Your disease classes (update these to match your model)
 class_names = [
@@ -213,14 +187,10 @@ def verify_user_code():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    print("✅ /predict endpoint hit.")
-    print("📦 request.files keys:", list(flask.request.files.keys()))
     print("Received request at /predict")
-    global model
     if model is None:
-        print("Model not loaded. Attempting to load now...")
-        if not load_model():
-            return flask.jsonify({'error': 'Model not loaded. Check logs.'}), 500
+        print("Model not loaded.")
+        return flask.jsonify({'error': 'Model not loaded. Check server logs.'}), 500
 
     try:
         if 'image' not in flask.request.files:
@@ -236,8 +206,10 @@ def predict():
         file_bytes = file.read()
         image = Image.open(io.BytesIO(file_bytes)).convert('RGB')
 
+        # Preprocess image
         image_tensor = transform(image).unsqueeze(0).to(device)
 
+        # Make prediction
         with torch.no_grad():
             outputs = model(image_tensor)
             probabilities = torch.nn.functional.softmax(outputs[0], dim=0)
@@ -311,6 +283,5 @@ if __name__ == '__main__':
         print("✅ Server ready!")
     else:
         print("⚠️ Server starting without model")
-    app.run(debug=False, host='0.0.0.0', port=5000)
 
-
+    app.run(debug=True, host='0.0.0.0', port=5000)
