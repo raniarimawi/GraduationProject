@@ -16,7 +16,8 @@ import os
 import requests
 import gdown
 from torch.serialization import add_safe_globals
-from torchvision.models import densenet161, DenseNet161_Weights
+from torchvision.models import mobilenet_v2, MobileNet_V2_Weights
+
 
 
 app = flask.Flask(__name__)
@@ -26,21 +27,25 @@ password_reset_codes = {}
 
 model = None
 
-class DenseNetModel(nn.Module):
-    def __init__(self, num_classes=10):
-        super(DenseNetModel, self).__init__()
-        self.model = densenet161(weights=None)  # no pre-trained weights
-        num_ftrs = self.model.classifier.in_features
+# ---------- MOBILENETV2 MODEL ----------
+class MobileNetModel(nn.Module):
+    def __init__(self, num_classes):
+        super(MobileNetModel, self).__init__()
+        self.model = mobilenet_v2(weights=MobileNet_V2_Weights.IMAGENET1K_V1)
+
+        for param in self.model.features.parameters():
+            param.requires_grad = True  # أو False لتثبيت الميزات
+
+        in_features = self.model.classifier[1].in_features
         self.model.classifier = nn.Sequential(
-            nn.Linear(num_ftrs, 512),
+            nn.Linear(in_features, 256),
             nn.ReLU(),
             nn.Dropout(0.3),
-            nn.Linear(512, num_classes)
+            nn.Linear(256, num_classes)
         )
 
     def forward(self, x):
         return self.model(x)
-
 
 # Device setup
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -50,8 +55,8 @@ print(f"Using device: {device}")
 model = None
 
 def download_model_from_huggingface():
-    url = "https://drive.google.com/uc?id=1EbRSDrvXiFlUgs0KH1jz4DhkOFwqCj_i"  # رابط Google Drive بصيغة مباشرة
-    local_path = "model.pth"
+    url = "https://drive.google.com/uc?id=12ASf_FHdmt_JjNOIepkU_zh74y8NofZM"  # رابط Google Drive بصيغة مباشرة
+    local_path = "mobilenetv2_model.pth"
 
     # لو كان في نسخة قديمة ناقصة أو فيها مشكلة، نحذفها
     if os.path.exists(local_path):
@@ -71,7 +76,7 @@ def load_model():
 
     if not os.path.exists(model_path):
         print("🔻 Downloading model from Google Drive...")
-        url = "https://drive.google.com/uc?id=1t_UUouGv0hsrYL6vLSymRfUx1HXst_ro"
+        url = "https://drive.google.com/uc?id=12ASf_FHdmt_JjNOIepkU_zh74y8NofZM"
         try:
             gdown.download(url, model_path, quiet=False)
             print("✅ Model downloaded successfully.")
@@ -80,7 +85,7 @@ def load_model():
             return False
 
     try:
-        model = DenseNetModel(num_classes=10)
+        model = MobileNetModel(num_classes=10)
         state_dict = torch.load(model_path, map_location=device)
         model.load_state_dict(state_dict)
         model.to(device)
