@@ -56,7 +56,7 @@ model = None
 
 
 def download_model_from_huggingface():
-    url = "https://drive.google.com/uc?id=14NCkv_gpolK0s5CzlUPB2AhPw7lptR8x"  # رابط Google Drive بصيغة مباشرة
+    url = "https://drive.google.com/uc?id=14NCkv_gpolK0s5CzlUPB2AhPw7lptR8x"  # رابط
     local_path = "mobilenetv2_model_quantized.pth"
 
     # لو كان في نسخة قديمة ناقصة أو فيها مشكلة، نحذفها
